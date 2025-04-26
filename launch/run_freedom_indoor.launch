@@ -1,0 +1,16 @@
+<launch>
+    <node name="freedom" pkg="freedom" type="freedom_node" output="screen">
+        <rosparam ns="/freedom" file="$(find freedom)/config/indoor_stairs.yaml" command="load" />
+        
+        <param name="pointcloud_topic" type="string" value="/velodyne_points" />
+        <param name="map_tf_frame" type="string" value="map" />
+        <param name="sensor_tf_frame" type="string" value="velodyne" />
+        <param name="save_map_topic" type="string" value="/save_map" />
+        <param name="save_map_path" type="string" value="$(find freedom)/generated_pcd/" />
+        <param name="fov_mask_path" type="string" value="$(find freedom)/config/" />
+        <param name="learn_fov" type="bool" value="false" />
+        <param name="enable_visualization" type="bool" value="true" />
+    </node>
+
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find freedom)/config/rviz_indoor.rviz"/>
+</launch>

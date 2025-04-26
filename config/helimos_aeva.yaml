@@ -1,0 +1,49 @@
+sensor:
+  min_range: 2.7    # Ignore points closer than this distance
+  max_range: 240.0  # Ignore points farther than this distance
+  min_z: -30.0      # Ignore points with z-value lower than this (relative to LiDAR)
+  max_z: 60.0       # Ignore points with z-value higher than this (relative to LiDAR)
+
+map:
+  sub_voxel_size: 0.1
+  voxel_depth: 2
+  block_depth: 5
+
+  # When local map is enabled, map outside the local map range will be removed
+  enable_local_map: false
+  local_map_range: 50.0     # Maximum distance of local map
+  local_map_min_z: -20.0    # Minimum height of local map
+  local_map_max_z: 20.0     # Maximum height of local map
+
+  # Raycast range limit
+  raycast_max_range: 100.0  # Maximum raycast distance
+  raycast_min_z: -5.0       # Minimum raycast height
+  raycast_max_z: 10.0       # Maximum raycast height
+
+  counts_to_free: 3
+  counts_to_revert: 20
+
+  conservative_connectivity: 26
+  aggressive_connectivity: 124
+
+raycast_enhancement:
+  enable_raycast_enhancement: true
+
+  lidar_horizon_fov_degree: 80.0
+  lidar_vertical_fov_upper_degree: 5.0
+  lidar_vertical_fov_lower_degree: -9.0
+  depth_image_vertical_lines: 32
+
+  depth_image_min_range: 0.2
+  max_raycast_enhancement_range: 50.0
+  raycast_enhancement_depth_margin: 0.2
+
+  inpaint_size: 4
+  erosion_size: 0
+  min_raycast_enhancement_area: 0.001
+  depth_image_top_margin: 0
+
+  enable_fov_mask: false
+  fov_mask_name: ""
+
+num_threads: 8

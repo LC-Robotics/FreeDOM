@@ -1,0 +1,22 @@
+<launch>
+  <param name="sensor_tf_frame" value="velodyne" type="string"/>
+  <param name="map_tf_frame" value="map" type="string"/>
+
+  <param name="pointcloud_topic" value="/velodyne_points" type="string"/>
+  <param name="save_map_topic" value="/save_map" type="string"/>
+
+  <!-- voxel_size = 0.2 for outdoor datasets and 0.1 for indoor datasets -->
+  <param name="voxel_size" value="0.2" type="double"/>  
+
+  <!-- min_range = 2.7 for outdoor datasets and 0.0 for indoor datasets -->
+  <param name="min_range" value="2.7" type="double"/>
+  <param name="max_range" value="1000.0" type="double"/>
+
+  <param name="save_map_path" value="$(find freedom)/generated_pcd/" type="string"/>
+
+  <param name="enable_save_frame" value="false" type="bool"/>
+  <param name="save_frame_path" value="$(find freedom)/generated_pcd/frame/" type="string"/>
+
+  <node name="ground_truth_generate" pkg="freedom" type="ground_truth_generate" output="screen" />
+
+</launch>

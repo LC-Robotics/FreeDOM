@@ -1,0 +1,9 @@
+<launch>
+  <!-- voxel_size = 0.2 for outdoor datasets and 0.1 for indoor datasets -->
+  <param name="voxel_size" value="0.2" type="double"/>
+
+  <param name="ground_truth_path" value="$(find freedom)/generated_pcd/ground_truth_voxel.pcd" type="string"/>
+  <param name="static_map_path" value="$(find freedom)/generated_pcd/static_map_voxel.pcd" type="string"/>
+
+  <node name="static_map_evaluate" pkg="freedom" type="static_map_evaluate" output="screen"/>
+</launch>
