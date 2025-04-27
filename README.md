@@ -64,15 +64,16 @@ roslaunch freedom static_map_evaluate.launch
 - Note that we use a voxel size of 0.2m for outdoor datasets and 0.1m for indoor datasets, which can be modified in `ground_truth_generate.launch` and `static_map_evaluate.launch`.
 
 ## 4. Citation
-This paper has been accepted but has not yet been officially published. Please refer to the final version once available.
+Please cite this paper if you find our work useful for your research.
 ```
-@article{10964854,
+@article{Li2025FreeDOM,
   author={Li, Chen and Li, Wanlei and Liu, Wenhao and Shu, Yixiang and Lou, Yunjiang},
   journal={IEEE Robotics and Automation Letters}, 
   title={FreeDOM: Online Dynamic Object Removal Framework for Static Map Construction Based on Conservative Free Space Estimation}, 
   year={2025},
-  volume={},
-  number={},
-  pages={1-8},
-  doi={10.1109/LRA.2025.3560881}}
+  volume={10},
+  number={6},
+  pages={5577-5584},
+  doi={10.1109/LRA.2025.3560881}
+}
 ```
