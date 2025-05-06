@@ -1,4 +1,8 @@
-#include "freedom/mrmap.h"
+//
+// Created by ZhiangQi on 25-5-5.
+//
+
+#include "FreeDOM-ROS2/mrmap.h"
 
 namespace freedom{
 unsigned int FreeBlock::voxel2blockMultiples_cubed_;
@@ -64,7 +68,7 @@ void MRMap::set_params(const MRMapConfig& config)
     local_raycast_blocks->reserve(raycast_map.total_block_num);
     for (unsigned int i = 0; i < raycast_map.total_block_num; ++i)
         local_raycast_blocks->emplace_back((voxel2blockMultiples_cubed_+63)/64);
-    
+
     local_occupied_blocks = std::make_unique<LocalOccupiedBlockGrid>();
     local_occupied_blocks->reserve(raycast_map.total_block_num);
     for (unsigned int i = 0; i < raycast_map.total_block_num; ++i)
@@ -100,7 +104,7 @@ void MRMap::scan_removal(ScanMap& scan)
                 // 若没有该free block，说明不为free space，直接跳过
                 if(free_block_ptr == nullptr)
                     continue;
-                
+
                 // 则将全部在free space中的scan voxel赋为CONSERVATIVE_DYNAMIC并加入occ_in_freespace
                 LinearIndex local_voxel_linear_idx;
                 for(ScanMap::ScanVoxel& scan_voxel : scan_block.scan_voxels)
@@ -196,7 +200,7 @@ void MRMap::scan_removal(ScanMap& scan)
     }
 
     if(cluster_aggressive_twice)
-    { 
+    {
         // 若aggressive_connectivity>=26，则需要两次cluster
         for(const Index& aggressive_voxel_idx : aggressive_update_list)
         {
@@ -235,7 +239,7 @@ void MRMap::scan_removal(ScanMap& scan)
             // 若邻居不在任何free block中，则无需处理
             if(free_block_ptr == nullptr)
                 continue;
-            
+
             getLocalVoxelLinearIdxFromVoxelIdx(neighbour_voxel_idx,local_voxel_linear_idx);
             FreeVoxel& free_voxel = free_block_ptr->getFreeVoxelFromLocalVoxelLinearIdx(local_voxel_linear_idx);
 
@@ -275,7 +279,7 @@ void MRMap::freespace_estimation(const ScanMap& scan, const DepthImage& depth_im
 
                 // 遍历每个scan voxel
                 for(const ScanMap::ScanVoxel& scan_voxel : scan_block.scan_voxels)
-                {               
+                {
                     // 标记穿过的体素为free
                     local_occupied_block.occ(scan_voxel.local_voxel_linear_idx);
                 }
@@ -329,7 +333,7 @@ void MRMap::freespace_estimation(const ScanMap& scan, const DepthImage& depth_im
                         // 若raycast到本scan occ的voxel，则停止这条光线的raycast
                         if(local_occupied_block.is_occ(local_voxel_linear_idx))
                             break;
-                        
+
                         // 标记穿过的体素为free
                         local_raycast_block.free(local_voxel_linear_idx);
 
@@ -382,7 +386,7 @@ void MRMap::freespace_estimation(const ScanMap& scan, const DepthImage& depth_im
                     // 若raycast到本scan occ的voxel，则停止这条光线的raycast
                     if(local_occupied_block.is_occ(local_voxel_linear_idx))
                         break;
-                    
+
                     // 标记穿过的体素为free
                     local_raycast_block.free(local_voxel_linear_idx);
 
@@ -428,7 +432,7 @@ void MRMap::freespace_estimation(const ScanMap& scan, const DepthImage& depth_im
     std::vector<std::future<void>> free_space_threads;
     for (size_t i = 0; i < num_threads; ++i) {
         free_space_threads.emplace_back(std::async(std::launch::async, [&,i]() {
-            
+
             const std::pair<LinearIndex,Index>* raycasted_block_idx_ptr;
             while(raycasted_block_idx_getter.get_ptr(raycasted_block_idx_ptr))
             {
@@ -511,7 +515,7 @@ void MRMap::freespace_estimation(const ScanMap& scan, const DepthImage& depth_im
                     getLocalVoxelLinearIdxFromVoxelIdx(voxel_idx,local_voxel_linear_idx);
                     FreeBlock& free_block = getFreeBlock(block_idx);
                     FreeVoxel& free_voxel =  free_block.getFreeVoxel(local_voxel_linear_idx);
-                    
+
                     free_voxel.is_free = true;
                     free_block.increaseFreeCount();
 
@@ -568,7 +572,7 @@ void MRMap::map_removal(const Indices& freespace_incremental)
             if(it == all_scans.end())
                 all_scans.emplace_back(scan_seq);
         }
-        
+
         for(unsigned int i : all_scans)
         {
             scan2map[i][voxel_idx] = DynamicLevel::CONSERVATIVE_DYNAMIC;
@@ -611,7 +615,7 @@ void MRMap::map_removal(const Indices& freespace_incremental)
                 getLocalVoxelLinearIdxFromVoxelIdx(neighbour_voxel_idx,local_neighbour_voxel_linear_idx);
                 if(!static_block_ptr->is_static_voxel_allocated(local_neighbour_voxel_linear_idx))
                     continue;
-                
+
                 StaticVoxel& static_voxel = static_block_ptr->getStaticVoxel(local_neighbour_voxel_linear_idx);
 
                 if( std::find(static_voxel.scan_in_subvoxel,static_voxel.scan_in_subvoxel + subvoxel2voxelMultiples_cubed_, scan_seq)
@@ -650,7 +654,7 @@ void MRMap::map_removal(const Indices& freespace_incremental)
                 getLocalVoxelLinearIdxFromVoxelIdx(neighbour_voxel_idx,local_neighbour_voxel_linear_idx);
                 if(!static_block_ptr->is_static_voxel_allocated(local_neighbour_voxel_linear_idx))
                     continue;
-                
+
                 StaticVoxel& static_voxel = static_block_ptr->getStaticVoxel(local_neighbour_voxel_linear_idx);
 
                 if( std::find(static_voxel.scan_in_subvoxel,static_voxel.scan_in_subvoxel + subvoxel2voxelMultiples_cubed_, scan_seq)
@@ -691,7 +695,7 @@ void MRMap::map_removal(const Indices& freespace_incremental)
                     getLocalVoxelLinearIdxFromVoxelIdx(neighbour_voxel_idx,local_neighbour_voxel_linear_idx);
                     if(!static_block_ptr->is_static_voxel_allocated(local_neighbour_voxel_linear_idx))
                         continue;
-                    
+
                     StaticVoxel& static_voxel = static_block_ptr->getStaticVoxel(local_neighbour_voxel_linear_idx);
 
                     if( std::find(static_voxel.scan_in_subvoxel,static_voxel.scan_in_subvoxel + subvoxel2voxelMultiples_cubed_, scan_seq)
@@ -736,7 +740,7 @@ void MRMap::map_removal(const Indices& freespace_incremental)
 
                 // 更新dynamic_level
                 static_voxel.dynamic_level[i] = target_dynamic_level;
-                
+
                 // 若原来的dynamic_level为STATIC，则需要减小static_occ_count
                 if(dynamic_level == DynamicLevel::STATIC)
                     ++ decreased_static_occ_count;
@@ -768,7 +772,7 @@ void MRMap::staticspace_integration(const ScanMap& scan, unsigned int scan_seq)
 
     // 并行插入点
     constVectorElementGetter<ScanMap::ScanBlock> scan_block_getter(scan.get_scan_blocks());
-    
+
     std::vector<std::future<void>> integrate_threads;
     for (size_t i = 0; i < num_threads; ++i) {
         integrate_threads.emplace_back(std::async(std::launch::async, [&]() {

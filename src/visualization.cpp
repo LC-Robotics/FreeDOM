@@ -1,7 +1,11 @@
-#include "freedom/visualization.h"
+//
+// Created by ZhiangQi on 25-5-5.
+//
+
+#include "FreeDOM-ROS2/visualization.h"
 
 namespace freedom{
-void Visualizer::set_params(const Config& config,ros::NodeHandle& nh)
+void Visualizer::set_params(const Config& config,rclcpp::Node& nh)
 {
     map_tf_frame = config.map_tf_frame;
     sub_voxel_size = config.sub_voxel_size;
@@ -15,48 +19,48 @@ void Visualizer::set_params(const Config& config,ros::NodeHandle& nh)
     half_block_bias = Eigen::Vector3d(block_size,block_size,block_size)/2.0;
     enable_raycast_enhancement = config.enable_raycast_enhancement;
 
-    scan_blocks_pub = nh.advertise<sensor_msgs::PointCloud2>("scan_blocks",10);
-    scan_voxels_pub = nh.advertise<sensor_msgs::PointCloud2>("scan_voxels",10);
-    clusters_pub = nh.advertise<sensor_msgs::PointCloud2>("clusters",10);
-    scan_map_range_pub = nh.advertise<visualization_msgs::Marker>("scan_map_range",10);
+    scan_blocks_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("scan_blocks",10);
+    scan_voxels_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("scan_voxels",10);
+    clusters_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("clusters",10);
+    scan_map_range_pub = nh.create_publisher<visualization_msgs::msg::Marker>("scan_map_range",10);
 
-    depth_image_pub = nh.advertise<sensor_msgs::Image>("depth_image",10);
-    enhanced_depth_image_pub = nh.advertise<sensor_msgs::Image>("enhanced_depth_image",10);
-    enhanced_pointcloud_pub = nh.advertise<sensor_msgs::PointCloud2>("enhanced_pointcloud",10);
+    depth_image_pub = nh.create_publisher<sensor_msgs::msg::Image>("depth_image",10);
+    enhanced_depth_image_pub = nh.create_publisher<sensor_msgs::msg::Image>("enhanced_depth_image",10);
+    enhanced_pointcloud_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("enhanced_pointcloud",10);
 
-    raycasted_blocks_pub = nh.advertise<sensor_msgs::PointCloud2>("raycasted_blocks",10);
-    raycasted_voxels_pub = nh.advertise<sensor_msgs::PointCloud2>("raycasted_voxels",10);
-    free_blocks_pub = nh.advertise<sensor_msgs::PointCloud2>("free_blocks",10);
-    free_voxels_pub = nh.advertise<sensor_msgs::PointCloud2>("free_voxels",10);
+    raycasted_blocks_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("raycasted_blocks",10);
+    raycasted_voxels_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("raycasted_voxels",10);
+    free_blocks_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("free_blocks",10);
+    free_voxels_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("free_voxels",10);
 
-    static_blocks_pub = nh.advertise<sensor_msgs::PointCloud2>("static_blocks",10);
-    static_voxels_pub = nh.advertise<sensor_msgs::PointCloud2>("static_voxels",10);
-    static_subvoxels_pub = nh.advertise<sensor_msgs::PointCloud2>("static_subvoxels",10);
-    static_pointcloud_pub = nh.advertise<sensor_msgs::PointCloud2>("static_pointcloud",10);
+    static_blocks_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("static_blocks",10);
+    static_voxels_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("static_voxels",10);
+    static_subvoxels_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("static_subvoxels",10);
+    static_pointcloud_pub = nh.create_publisher<sensor_msgs::msg::PointCloud2>("static_pointcloud",10);
 
-    raycast_map_range_pub = nh.advertise<visualization_msgs::Marker>("raycast_range",10);
-    local_map_range_pub = nh.advertise<visualization_msgs::Marker>("local_map_range",10);
+    raycast_map_range_pub = nh.create_publisher<visualization_msgs::msg::Marker>("raycast_range",10);
+    local_map_range_pub = nh.create_publisher<visualization_msgs::msg::Marker>("local_map_range",10);
 }
 
 void Visualizer::visualize_scan_removal_result(const ScanMap& scan)
 {
-    if(scan_blocks_pub.getNumSubscribers() > 0)
+    if(scan_blocks_pub->get_subscription_count() > 0)
         visualize_scan_blocks(scan);
 
-    if(scan_voxels_pub.getNumSubscribers() > 0)
+    if(scan_voxels_pub->get_subscription_count() > 0)
         visualize_scan_voxels(scan);
 
-    if(clusters_pub.getNumSubscribers() > 0)
+    if(clusters_pub->get_subscription_count() > 0)
         visualize_clusters(scan);
-    
-    if(scan_map_range_pub.getNumSubscribers()>0)
+
+    if(scan_map_range_pub->get_subscription_count()>0)
         visualize_scan_map_range(scan);
 }
 
 void Visualizer::visualize_scan_blocks(const ScanMap& scan)
 {
     pcl::PointCloud<pcl::PointXYZ> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     const ScanMap::ScanBlockList& scan_blocks = scan.get_scan_blocks();
 
@@ -73,13 +77,13 @@ void Visualizer::visualize_scan_blocks(const ScanMap& scan)
     }
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
-    scan_blocks_pub.publish(pointcloud_msg);
+    scan_blocks_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_scan_voxels(const ScanMap& scan)
 {
     pcl::PointCloud<pcl::PointXYZRGB> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     const ScanMap::ScanBlockList& scan_blocks = scan.get_scan_blocks();
 
@@ -131,13 +135,13 @@ void Visualizer::visualize_scan_voxels(const ScanMap& scan)
     }
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
-    scan_voxels_pub.publish(pointcloud_msg);
+    scan_voxels_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_clusters(const ScanMap& scan)
 {
     pcl::PointCloud<pcl::PointXYZRGB> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     const ScanMap::ScanBlockList& scan_blocks = scan.get_scan_blocks();
     for(const ScanMap::ScanBlock& scan_block : scan_blocks)
@@ -146,7 +150,7 @@ void Visualizer::visualize_clusters(const ScanMap& scan)
         {
             if(scan_voxel.dynamic_level == DynamicLevel::STATIC)
                 continue;
-            
+
             pcl::PointXYZRGB pcl_point;
             Eigen::Vector3d voxel_coord = voxel_size * scan_voxel.voxel_idx.cast<double>() + half_voxel_bias;
             pcl_point.x = voxel_coord.x();
@@ -181,15 +185,15 @@ void Visualizer::visualize_clusters(const ScanMap& scan)
     }
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
-    clusters_pub.publish(pointcloud_msg);
+    clusters_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_scan_map_range(const ScanMap& scan)
 {
-    visualization_msgs::Marker line;
+    visualization_msgs::msg::Marker line;
     line.header.frame_id = map_tf_frame;
-    line.action = visualization_msgs::Marker::ADD;
-    line.type =  visualization_msgs::Marker::LINE_LIST;
+    line.action = visualization_msgs::msg::Marker::ADD;
+    line.type =  visualization_msgs::msg::Marker::LINE_LIST;
     line.ns = "local_map_range";
     line.id = 0;
     line.scale.x = 0.4;
@@ -202,7 +206,7 @@ void Visualizer::visualize_scan_map_range(const ScanMap& scan)
     line.pose.orientation.z = 0.0;
     line.pose.orientation.w = 1.0;
 
-    geometry_msgs::Point p[24];
+    geometry_msgs::msg::Point p[24];
     Eigen::Vector3d min,max;
     min = scan.get_scan_map_min();
     max = min + scan.get_scan_map_size();
@@ -234,16 +238,16 @@ void Visualizer::visualize_scan_map_range(const ScanMap& scan)
     {
   	    line.points.push_back(p[i]);
     }
-    
-    scan_map_range_pub.publish(line);
+
+    scan_map_range_pub->publish(line);
 }
 
 void Visualizer::visualize_raycast_enhancement_result(const DepthImage& image)
-{   
-    if(enable_raycast_enhancement && (depth_image_pub.getNumSubscribers()>0 || enhanced_depth_image_pub.getNumSubscribers()>0))
+{
+    if(enable_raycast_enhancement && (depth_image_pub->get_subscription_count()>0 || enhanced_depth_image_pub->get_subscription_count()>0))
         visualize_depth_image(image);
 
-    if(enable_raycast_enhancement && enhanced_pointcloud_pub.getNumSubscribers()>0)
+    if(enable_raycast_enhancement && enhanced_pointcloud_pub->get_subscription_count()>0)
         visualize_enhanced_pointcloud(image);
 }
 
@@ -262,19 +266,19 @@ void Visualizer::visualize_depth_image(const DepthImage& image)
 
     colored_depth_image.setTo(cv::Scalar(0, 0, 0), raycast_enhance_region);
     colored_depth_image.setTo(cv::Scalar(0, 0, 0), fov_image == 0);
-    sensor_msgs::ImagePtr depth_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", colored_depth_image).toImageMsg();
+    sensor_msgs::msg::Image::SharedPtr depth_image_msg = cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", colored_depth_image).toImageMsg();
 
     colored_inpainted_image.copyTo(colored_depth_image, eroded_raycast_enhance_region);
-    sensor_msgs::ImagePtr inpainted_depth_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", colored_depth_image).toImageMsg();
+    sensor_msgs::msg::Image::SharedPtr inpainted_depth_image_msg = cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", colored_depth_image).toImageMsg();
 
-    depth_image_pub.publish(depth_image_msg);
-    enhanced_depth_image_pub.publish(inpainted_depth_image_msg);
+    depth_image_pub->publish(*depth_image_msg);
+    enhanced_depth_image_pub->publish(*inpainted_depth_image_msg);
 }
 
 void Visualizer::visualize_enhanced_pointcloud(const DepthImage& image)
 {
     pcl::PointCloud<pcl::PointXYZ> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     const Points& enhanced_pointcloud = image.get_enhanced_pointcloud();
     for(const Point& point : enhanced_pointcloud)
@@ -285,46 +289,46 @@ void Visualizer::visualize_enhanced_pointcloud(const DepthImage& image)
 
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
-    enhanced_pointcloud_pub.publish(pointcloud_msg);
+    enhanced_pointcloud_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_map_removal_result(const MRMap& map)
-{   
-    if(raycasted_blocks_pub.getNumSubscribers()>0)
+{
+    if(raycasted_blocks_pub->get_subscription_count()>0)
         visualize_raycasted_blocks(map);
 
-    if(raycasted_voxels_pub.getNumSubscribers()>0)
+    if(raycasted_voxels_pub->get_subscription_count()>0)
         visualize_raycasted_voxels(map);
-    
-    if(free_blocks_pub.getNumSubscribers()>0)
+
+    if(free_blocks_pub->get_subscription_count()>0)
         visualize_free_blocks(map);
 
-    if(free_voxels_pub.getNumSubscribers()>0)
+    if(free_voxels_pub->get_subscription_count()>0)
         visualize_free_voxels(map);
 
-    if(static_blocks_pub.getNumSubscribers()>0)
+    if(static_blocks_pub->get_subscription_count()>0)
         visualize_static_blocks(map);
-    
-    if(static_voxels_pub.getNumSubscribers()>0)
+
+    if(static_voxels_pub->get_subscription_count()>0)
         visualize_static_voxels(map);
-    
-    if(static_subvoxels_pub.getNumSubscribers()>0)
+
+    if(static_subvoxels_pub->get_subscription_count()>0)
         visualize_static_subvoxels(map);
-    
-    if(static_pointcloud_pub.getNumSubscribers()>0)
+
+    if(static_pointcloud_pub->get_subscription_count()>0)
         visualize_static_pointcloud(map);
-    
-    if(raycast_map_range_pub.getNumSubscribers()>0)
+
+    if(raycast_map_range_pub->get_subscription_count()>0)
         visualize_raycast_map_range(map);
 
-    if(map.local_map_enabled() && local_map_range_pub.getNumSubscribers()>0)
+    if(map.local_map_enabled() && local_map_range_pub->get_subscription_count()>0)
         visualize_local_map_range(map);
 }
 
 void Visualizer::visualize_raycasted_blocks(const MRMap& map)
 {
     pcl::PointCloud<pcl::PointXYZ> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     const MRMap::LocalRaycastedFlag& raycasted_flag = map.get_raycasted_flags();
 
@@ -348,13 +352,13 @@ void Visualizer::visualize_raycasted_blocks(const MRMap& map)
 
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
-    raycasted_blocks_pub.publish(pointcloud_msg);
+    raycasted_blocks_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_raycasted_voxels(const MRMap& map)
 {
     pcl::PointCloud<pcl::PointXYZ> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     const MRMap::LocalRaycastedFlag& raycasted_flag = map.get_raycasted_flags();
     const MRMap::LocalRaycastBlockGrid& raycast_blocks = map.get_raycast_blocks();
@@ -397,13 +401,13 @@ void Visualizer::visualize_raycasted_voxels(const MRMap& map)
 
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
-    raycasted_voxels_pub.publish(pointcloud_msg);
+    raycasted_voxels_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_free_blocks(const MRMap& map)
 {
     pcl::PointCloud<pcl::PointXYZRGB> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     for(const auto& block_pair : map.get_free_blocks())
     {
@@ -429,13 +433,13 @@ void Visualizer::visualize_free_blocks(const MRMap& map)
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
 
-    free_blocks_pub.publish(pointcloud_msg);
+    free_blocks_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_free_voxels(const MRMap& map)
 {
     pcl::PointCloud<pcl::PointXYZ> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     unsigned int block_idx_size = map.getVoxel2blockMultiples();
     unsigned int voxel_num = map.getVoxel2blockMultiplesCubed();
@@ -474,13 +478,13 @@ void Visualizer::visualize_free_voxels(const MRMap& map)
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
 
-    free_voxels_pub.publish(pointcloud_msg);
+    free_voxels_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_static_blocks(const MRMap& map)
 {
     pcl::PointCloud<pcl::PointXYZ> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     for(const auto& block_pair : map.get_static_blocks())
     {
@@ -494,13 +498,13 @@ void Visualizer::visualize_static_blocks(const MRMap& map)
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
 
-    static_blocks_pub.publish(pointcloud_msg);
+    static_blocks_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_static_voxels(const MRMap& map)
 {
     pcl::PointCloud<pcl::PointXYZ> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     unsigned int block_idx_size = map.getVoxel2blockMultiples();
     unsigned int voxel_num = map.getVoxel2blockMultiplesCubed();
@@ -531,13 +535,13 @@ void Visualizer::visualize_static_voxels(const MRMap& map)
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
 
-    static_voxels_pub.publish(pointcloud_msg);
+    static_voxels_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_static_subvoxels(const MRMap& map)
 {
     pcl::PointCloud<pcl::PointXYZRGB> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     unsigned int block_idx_size = map.getVoxel2blockMultiples();
     unsigned int voxel_idx_size = map.getSubvoxel2voxelMultiples();
@@ -614,13 +618,13 @@ void Visualizer::visualize_static_subvoxels(const MRMap& map)
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
 
-    static_subvoxels_pub.publish(pointcloud_msg);
+    static_subvoxels_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_static_pointcloud(const MRMap& map)
 {
     pcl::PointCloud<pcl::PointXYZ> pointcloud;
-    sensor_msgs::PointCloud2 pointcloud_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_msg;
 
     unsigned int block_idx_size = map.getVoxel2blockMultiples();
     unsigned int voxel_idx_size = map.getSubvoxel2voxelMultiples();
@@ -669,15 +673,15 @@ void Visualizer::visualize_static_pointcloud(const MRMap& map)
     pcl::toROSMsg(pointcloud,pointcloud_msg);
     pointcloud_msg.header.frame_id = map_tf_frame;
 
-    static_pointcloud_pub.publish(pointcloud_msg);
+    static_pointcloud_pub->publish(pointcloud_msg);
 }
 
 void Visualizer::visualize_raycast_map_range(const MRMap& map)
 {
-    visualization_msgs::Marker line;
+    visualization_msgs::msg::Marker line;
     line.header.frame_id = map_tf_frame;
-    line.action = visualization_msgs::Marker::ADD;
-    line.type =  visualization_msgs::Marker::LINE_LIST;
+    line.action = visualization_msgs::msg::Marker::ADD;
+    line.type =  visualization_msgs::msg::Marker::LINE_LIST;
     line.ns = "raycast_map_range";
     line.id = 0;
     line.scale.x = 0.4;
@@ -690,7 +694,7 @@ void Visualizer::visualize_raycast_map_range(const MRMap& map)
     line.pose.orientation.z = 0.0;
     line.pose.orientation.w = 1.0;
 
-    geometry_msgs::Point p[24];
+    geometry_msgs::msg::Point p[24];
     Eigen::Vector3d min,max;
     min = map.get_raycast_map_min();
     max = map.get_raycast_map_max();
@@ -722,16 +726,16 @@ void Visualizer::visualize_raycast_map_range(const MRMap& map)
     {
   	    line.points.push_back(p[i]);
     }
-    
-    raycast_map_range_pub.publish(line);
+
+    raycast_map_range_pub->publish(line);
 }
 
 void Visualizer::visualize_local_map_range(const MRMap& map)
 {
-    visualization_msgs::Marker line;
+    visualization_msgs::msg::Marker line;
     line.header.frame_id = map_tf_frame;
-    line.action = visualization_msgs::Marker::ADD;
-    line.type =  visualization_msgs::Marker::LINE_LIST;
+    line.action = visualization_msgs::msg::Marker::ADD;
+    line.type =  visualization_msgs::msg::Marker::LINE_LIST;
     line.ns = "local_map_range";
     line.id = 0;
     line.scale.x = 0.4;
@@ -744,7 +748,7 @@ void Visualizer::visualize_local_map_range(const MRMap& map)
     line.pose.orientation.z = 0.0;
     line.pose.orientation.w = 1.0;
 
-    geometry_msgs::Point p[24];
+    geometry_msgs::msg::Point p[24];
     Eigen::Vector3d min,max;
     min = map.get_local_map_min();
     max = map.get_local_map_max();
@@ -776,7 +780,7 @@ void Visualizer::visualize_local_map_range(const MRMap& map)
     {
   	    line.points.push_back(p[i]);
     }
-    
-    local_map_range_pub.publish(line);
+
+    local_map_range_pub->publish(line);
 }
 }

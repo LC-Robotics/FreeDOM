@@ -1,4 +1,8 @@
-#include "freedom/scanmap.h"
+//
+// Created by ZhiangQi on 25-5-5.
+//
+
+#include "FreeDOM-ROS2/scanmap.h"
 
 namespace freedom{
 void ScanMap::set_params(const ScanMapConfig& config)
@@ -61,7 +65,7 @@ void ScanMap::build_scan_blocks(const pcl::PointCloud<pcl::PointXYZ>& cloud, con
 
                 double range_squared = (transformed_point - sensor_origin).squaredNorm();
 
-                if( range_squared < sensor_min_range_squared || 
+                if( range_squared < sensor_min_range_squared ||
                     range_squared > sensor_max_range_squared ||
                     transformed_point.z() < point_min_z ||
                     transformed_point.z() > point_max_z )
@@ -73,7 +77,7 @@ void ScanMap::build_scan_blocks(const pcl::PointCloud<pcl::PointXYZ>& cloud, con
                 // 获取local block并上锁
                 LocalScanBlock& local_block = local_blocks[local_block_linear_idx];
                 std::unique_lock<std::mutex> local_block_lock((*block_mutexes)[local_block_linear_idx]);
-                
+
                 // 若还没有点(第一次遍历)，则在thread_scan_blocks中新增ScanBlock
                 if(local_block.points.empty())
                     thread_scan_blocks.emplace_back(block_idx,local_block_linear_idx);
@@ -104,7 +108,7 @@ void ScanMap::build_scan_blocks(const pcl::PointCloud<pcl::PointXYZ>& cloud, con
 void ScanMap::build_scan_voxels()
 {
     VectorElementGetter<ScanBlock> scan_block_getter(scan_blocks);
-    
+
     std::vector<std::future<void>> threads;
     for (size_t i = 0; i < num_threads; ++i) {
         threads.emplace_back(std::async(std::launch::async, [&]() {

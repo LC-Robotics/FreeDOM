@@ -14,20 +14,20 @@ Clone source code:
 ```bash
 mkdir -p ./Freedom_ws/src
 cd ./Freedom_ws/src
-git clone https://github.com/LC-Robotics/FreeDOM.git
+git clone https://github.com/qza36/FreeDOM -b jazzy
 ```
 Build:
 ```bash
 cd ..
-catkin build
+colcon build
 ```
 
 ## 2. Run
 Run experiments on the SemanticKITTI dataset:
 ```bash
-source devel/setup.bash
-roslaunch freedom run_freedom.launch
-rosbag play DATASET.bag
+source install/setup.bash
+ros2 launch freedom run_freedom.launch.py
+ros2 bag play DATASET.bag
 ```
 All rosbags can be found [here](https://drive.google.com/drive/folders/1fIDHxXvzVftwmE3uOejQGbytoBfeMTMA?usp=sharing). To run experiments on other datasets (HeLiMOS, Indoor), modify the `yaml` file path in `run_freedom.launch` and play the corresponding rosbag.
 
@@ -41,6 +41,7 @@ rostopic pub /save_map std_msgs/Empty "{}" -1
 ```
 The static map will be saved by default at `./generated_pcd`.
 
+Evaluation is not adjusted for ros2 yet, so you need to use the original evaluation code from [SemanticKITTI](https://github.com/LC-Robotics/FreeDOM)
 ## 3. Evaluation
 Generate ground truth:
 ```bash
@@ -62,6 +63,7 @@ roslaunch freedom static_map_evaluate.launch
 - Make sure the `ground_truth_path` and `static_map_path` in `static_map_evaluate.launch` are correct.
 
 - Note that we use a voxel size of 0.2m for outdoor datasets and 0.1m for indoor datasets, which can be modified in `ground_truth_generate.launch` and `static_map_evaluate.launch`.
+
 
 ## 4. Citation
 Please cite this paper if you find our work useful for your research.
