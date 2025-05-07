@@ -1,5 +1,8 @@
-#include "freedom/depth_image.h"
+//
+// Created by arlo on 25-5-5.
+//
 
+#include "FreeDOM-ROS2/depth_image.h"
 namespace freedom{
 void DepthImage::set_params(const DepthImageConfig& config)
 {
@@ -8,7 +11,7 @@ void DepthImage::set_params(const DepthImageConfig& config)
     lidar_vertical_fov_lower = config.lidar_vertical_fov_lower;
     lidar_vertical_fov = lidar_vertical_fov_upper - lidar_vertical_fov_lower;
     rows = config.depth_image_vertical_lines;
-    
+
     depth_image_min_range = config.depth_image_min_range;
     max_raycast_enhancement_range = config.max_raycast_enhancement_range;
     inpaint_size = config.inpaint_size;
@@ -69,9 +72,9 @@ void DepthImage::set_params(const DepthImageConfig& config)
         cv::Mat raw_fov_image = cv::imread(fov_mask_path, cv::IMREAD_GRAYSCALE);
         if(static_cast<unsigned int>(raw_fov_image.rows) != rows || static_cast<unsigned int>(raw_fov_image.cols) != cols)
             std::cerr << "FOV mask shape does not match, (" << rows << "," << cols << ") required, (" << raw_fov_image.rows << "," << raw_fov_image.cols << ") provided." << std::endl;
-        
+
         raw_fov_image.copyTo((*fov_image)(cv::Range::all(), image_col_range));
-        
+
         if(is_panorama)
         {
             fov_image->colRange(right_margin_src).copyTo(fov_image->colRange(right_margin));
@@ -90,7 +93,7 @@ void DepthImage::raycast_enhancement(const pcl::PointCloud<pcl::PointXYZ>& cloud
 {
     // 清空上一帧的数据
     reset();
-    
+
     unsigned int row,col,depth;
 
     // 生成深度图与深度补全范围
@@ -99,10 +102,10 @@ void DepthImage::raycast_enhancement(const pcl::PointCloud<pcl::PointXYZ>& cloud
     {
         if(!point2idx(cloud[id], row, col, depth))
             continue;
-        
+
         if(depth < depth_image->at<uchar>(row, col))
             depth_image->at<uchar>(row, col) = depth;
-        
+
         raycast_enhance_region->at<uchar>(row, col) = 0;
     }
 
@@ -144,8 +147,8 @@ void DepthImage::raycast_enhancement(const pcl::PointCloud<pcl::PointXYZ>& cloud
 
     for(int i = 1; i < numComponents; ++i)
     {
-        if( static_cast<unsigned int>(stats.at<int>(i, cv::CC_STAT_AREA)) <= min_raycast_enhancement_area_pixel_num || 
-            static_cast<unsigned int>(stats.at<int>(i, cv::CC_STAT_TOP)) > top_margin || 
+        if( static_cast<unsigned int>(stats.at<int>(i, cv::CC_STAT_AREA)) <= min_raycast_enhancement_area_pixel_num ||
+            static_cast<unsigned int>(stats.at<int>(i, cv::CC_STAT_TOP)) > top_margin ||
             static_cast<unsigned int>(stats.at<int>(i, cv::CC_STAT_TOP) + stats.at<int>(i, cv::CC_STAT_HEIGHT)) >= rows)
             eroded_raycast_enhance_region->setTo(cv::Scalar(0), labels == i);
     }
@@ -156,7 +159,7 @@ void DepthImage::raycast_enhancement(const pcl::PointCloud<pcl::PointXYZ>& cloud
         {
             if(eroded_raycast_enhance_region->at<uchar>(row,col) <= 0)
                 continue;
-            
+
             Point raycast_enhancement_point;
             idx2point(row,col,inpainted_image->at<uchar>(row,col),raycast_enhancement_point);
             enhanced_pointcloud.emplace_back(transform * raycast_enhancement_point);

@@ -1,4 +1,7 @@
-#include "freedom/freedom.h"
+//
+// Created by ZhiangQi on 25-5-5.
+//
+#include "FreeDOM-ROS2/freedom.h"
 
 namespace freedom{
 void FreeDOM::set_params(const Config& config)
@@ -19,7 +22,7 @@ void FreeDOM::set_params(const Config& config)
         config.sensor_max_z
     };
     scan.set_params(scan_config);
-    
+
     MRMap::MRMapConfig map_config{
         config.sub_voxel_size,
         config.voxel_depth,
